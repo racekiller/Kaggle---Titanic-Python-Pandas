@@ -63,7 +63,29 @@ df['Age'].median()
 # How to show specific columns from the df
 df[['Sex','Pclass','Age']]
 
+# How to filter data 
+# Show all rows where age is greater than 60
+df[df['Age'] > 60]
 
+# Show specific columns that matches the WHERE clause
+df[df['Age'] > 60][['Pclass','Age','Survived']]
 
+# Lets take a look to the null value in Ages
 
+df[df['Age'].isnull()][['Sex', 'Pclass', 'Age']]
 
+# here we will go over the dataframe to get the count of male per class
+for i in range(1,4):
+    a = len(df[ (df['Sex'] == 'male') & (df['Pclass'] == i) ])
+    print (a)
+    
+# let's draw some picture
+import pylab as P
+df['Age'].hist()
+P.show()
+
+df['Age'].dropna().hist(bins=16, range=(0,80),alpha = 0.5)
+P.show()
+
+# Cleaning the data
+df['Gender'] = 4
