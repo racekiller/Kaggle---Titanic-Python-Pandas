@@ -29,7 +29,8 @@ type(data[0::5,5])
 # we can take the mean of the passenger ages. They will need to be floats
 # instead of strings, so set this up as:
 
-ages_onboard = data[0::,5].astype(np.float)
+# ages_onboard = data[0::,5].astype(np.float)
+
 # we will get an error
 # ValueError: could not convert string to float: 
 # because there are non numeric values in the column 5
@@ -93,4 +94,12 @@ df['Age'].dropna().hist(bins=16, range=(0,80),alpha = 0.5)
 P.show()
 
 # Cleaning the data
+# Creating a column into df dataframe
 df['Gender'] = 4
+# Here we take the first letter of the element and convert to Uppercase
+df['Gender'] = df['Sex'].map(lambda x: x[0].upper())
+# Now here we replace each element string with integer number in this case
+df['Gender'] = df['Sex'].map({'female': 0, 'male': 1}).astype(int)
+# We will do the same than above but this time we will skip the nan (null)
+df['Embarked_F'] = df['Embarked'].dropna().map({'S': 0, 'Q': 1, 'C': 2}).\
+                    astype(int)
