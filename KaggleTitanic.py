@@ -8,7 +8,10 @@ Created on Wed Oct 26 18:34:03 2016
 import csv as csv 
 import numpy as np
 
-csv_file_object = csv.reader(open('/Users/jvivas/Documents/GitHub/Kaggle - Titanic Python Pandas/train.csv'))
+Windows_Path = 'C:/Users/jvivas/Dropbox/Private/Personal/Github/Kaggle---Titanic-Python-Pandas/train.csv'
+Mac_Path = '/Users/jvivas/Documents/GitHub/Kaggle - Titanic Python Pandas/train.csv'
+
+csv_file_object = csv.reader(open(Windows_Path))
 header = csv_file_object.__next__()
 data=[]
 
@@ -22,7 +25,9 @@ data[0::,5]
 #let's see the dataytype
 type(data[0::5,5])
 
-#So, any slice we take from the data is still a Numpy array. Now let's see if we can take the mean of the passenger ages. They will need to be floats instead of strings, so set this up as:
+# So, any slice we take from the data is still a Numpy array. Now let's see if
+# we can take the mean of the passenger ages. They will need to be floats
+# instead of strings, so set this up as:
 
 ages_onboard = data[0::,5].astype(np.float)
 # we will get an error
@@ -34,7 +39,7 @@ ages_onboard = data[0::,5].astype(np.float)
 
 import pandas as pd
 # For .read_csv, always use header=0 when you know row 0 is the header row
-df = pd.read_csv('/Users/jvivas/Documents/GitHub/Kaggle - Titanic Python Pandas/train.csv',header=0)
+df = pd.read_csv(Windows_Path,header=0)
 df.head(3)
 df.tail(3)
 
