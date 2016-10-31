@@ -7,6 +7,17 @@ Created on Wed Oct 26 18:34:03 2016
 
 import csv as csv 
 import numpy as np
+# Lets do some predictions using Random Forest
+# Import the random forest package
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.cross_validation import train_test_split
+from sklearn.metrics import classification_report
+from sklearn.pipeline import Pipeline
+from sklearn.grid_search import GridSearchCV
+from sklearn import tree
+from sklearn import metrics
+import pandas as pd
 
 Windows_Path = 'C:/Users/jvivas/Dropbox/Private/Personal/Github/Kaggle---Titanic-Python-Pandas'
 Mac_Path = '/Users/jvivas/Documents/GitHub/Kaggle - Titanic Python Pandas'
@@ -40,7 +51,6 @@ type(data[0::5,5])
 # or we cna use pandas which offers more tools to do this kind of tasks
 # (data clenasing)
 
-import pandas as pd
 # For .read_csv, always use header=0 when you know row 0 is the header row
 df_original_train = pd.read_csv(Path + '/' + 'train.csv', header=0)
 df_original_test = pd.read_csv(Path + '/' + 'test.csv', header=0)
@@ -209,23 +219,36 @@ x_train_data = df.ix[:, df.columns != 'Survived'].values
 y_train_data = df['Survived'].values
 x_test_data = df_test.values
 
-# Lets do some predictions using Random Forest
-# Import the random forest package
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.cross_validation import train_test_split
-from sklearn import tree
-
 x_Train, x_test, y_train, y_test = train_test_split(x_train_data, y_train_data, test_size = 0.25, random_state = 33)
 
-clf = tree.DecisionTreeClassifier(criterion='entropy', max_depth = 100, min_samples_leaf = 5)
+# Lets create the pipeline
+pipeline = Pipeline([
+            ('clf', DecisionTreeClassifier(criterion='entropy'))
+            ])
 
+# Next we specify the hyperparameter psace for the grid seach
+parameters = {'clf__max_depth': (100, 125, 150),
+              'clf__min_samples_leaf': (5,6,7)}
+
+# We the set the GridSeacrhCV() to amximize the models F1 score:
+grid_search = GridSearchCV(pipeline, parameters, n_jobs=-1,
+                           verbose=1, scoring='f1')
+grid_search.fit(x_Train, y_train)
+print ('Best score: %0.3f' % grid_search.best_score_)
+print ('Best parameters set:')
+best_parameters = grid_search.best_estimator_.get_params()
+for param_name in sorted(parameters.keys()):
+    print ('\t%s: %r' % (param_name, best_parameters[param_name]))
+
+
+clf = tree.DecisionTreeClassifier(criterion='entropy', max_depth = 100, min_samples_leaf = 5)
 clf = clf.fit(x_Train, y_train)
+y_pred = clf.predict(x_test)
 
 clf_RF = RandomForestClassifier(n_estimators = 10, random_state = 33)
 clf_RF = clf_RF.fit(x_Train, y_train)
 y_pred_RF = clf_RF.predict(x_test)
 
-from sklearn import metrics
 def  measure_perfomance(x,y,clf,show_accuracy=True,show_classification_report=True\
                     ,show_confusion_matrix=True):
     y_pred = clf.predict(x)
@@ -249,7 +272,7 @@ measure_perfomance(x_test,y_test, clf_RF,show_classification_report=True, \
 y_pred_RF_output = clf_RF.predict(x_test_data).astype(int)
 
 # Sending data to CSV file using Kaggle code
-KagglePredictionFile = open("kagglePredictionTitanic.csv", "wb")
+KagglePredictionFile = open("kagglePredictionTitanicTree.csv", "w")
 open_file_object = csv.writer(KagglePredictionFile)
 open_file_object.writerow(["PassengerId","Survived"])
 open_file_object.writerows(zip(ids, y_pred_RF_output))
