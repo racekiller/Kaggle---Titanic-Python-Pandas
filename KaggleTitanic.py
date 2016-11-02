@@ -7,23 +7,38 @@ Created on Wed Oct 26 18:34:03 2016
 
 import csv as csv
 import numpy as np
+# Lets do some predictions using Random Forest
+# Import the random forest package
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.cross_validation import train_test_split
+from sklearn.metrics import classification_report
+from sklearn.pipeline import Pipeline
+from sklearn.grid_search import GridSearchCV
+from sklearn import tree
+from sklearn import metrics
+import pandas as pd
 
 Windows_Path = 'C:/Users/jvivas/Dropbox/Private/Personal/Github/Kaggle---Titanic-Python-Pandas'
 Mac_Path = '/Users/jvivas/Documents/GitHub/Kaggle - Titanic Python Pandas'
-Path = Windows_Path
+Path = Mac_Path
 csv_file_object = csv.reader(open(Path+'/' + 'train.csv'))
 header = csv_file_object.__next__()
 data=[]
 
-for row in csv_file_object:
-    data.append(row)
-data = np.array(data)    
+# csv_file_object = csv.reader(open(Path+'/' + 'train.csv'))
+# header = csv_file_object.__next__()
+# data=[]
+#
+# for row in csv_file_object:
+#     data.append(row)
+# data = np.array(data)
 
-#Look at the first 15 rows of the Age column:   
-data[0::,5]
+# Look at the first 15 rows of the Age column:
+# data[0::,5]
 
-#let's see the dataytype
-type(data[0::5,5])
+# let's see the dataytype
+# type(data[0::5,5])
 
 # So, any slice we take from the data is still a Numpy array. Now let's see if
 # we can take the mean of the passenger ages. They will need to be floats
@@ -40,24 +55,23 @@ type(data[0::5,5])
 # or we cna use pandas which offers more tools to do this kind of tasks
 # (data clenasing)
 
-import pandas as pd
 # For .read_csv, always use header=0 when you know row 0 is the header row
 df_original_train = pd.read_csv(Path + '/' + 'train.csv', header=0)
 df_original_test = pd.read_csv(Path + '/' + 'test.csv', header=0)
 df_test = pd.read_csv(Path + '/' + 'test.csv', header=0)
 df = pd.read_csv(Path + '/' + 'train.csv', header=0)
-df.head(3)
-df.tail(3)
+# df.head(3)
+# df.tail(3)
 
 # Showing dataframe type
-type(df)
+# type(df)
 # showing elements type
-df.dtypes
+# df.dtypes
 # Showing additional information for each elemtn (count and type and if tis
 # null)
-df.info()
+# df.info()
 # Showing statistical information such (mean, max, count, min)
-df.describe()
+# df.describe()
 
 # Data Munging
 # One step in any data analysis is the data cleaning. Thankfully pandas makes
@@ -68,26 +82,26 @@ df.describe()
 # Referencing and filtering
 # Let's acquire the first 10 rows of the Age column. In pandas this is
 
-df['Age'][0:10]
-df.Age[0:10]
+# df['Age'][0:10]
+# df.Age[0:10]
 
 # let's do some calculations
-df['Age'].mean()
-df['Age'].median()
+# df['Age'].mean()
+# df['Age'].median()
 
 # How to show specific columns from the df
-df[['Sex','Pclass','Age']]
+# df[['Sex','Pclass','Age']]
 
 # How to filter data 
 # Show all rows where age is greater than 60
-df[df['Age'] > 60]
+# df[df['Age'] > 60]
 
 # Show specific columns that matches the WHERE clause
-df[df['Age'] > 60][['Pclass','Age','Survived']]
+# df[df['Age'] > 60][['Pclass','Age','Survived']]
 
 # Lets take a look to the null value in Ages
 
-df[df['Age'].isnull()][['Sex', 'Pclass', 'Age']]
+# df[df['Age'].isnull()][['Sex', 'Pclass', 'Age']]
 
 # here we will go over the dataframe to get the count of male per class
 for i in range(1,4):
@@ -95,16 +109,30 @@ for i in range(1,4):
     print (a)
     
 # let's draw some picture
-import pylab as P
-df['Age'].hist()
-P.show()
-
-df['Age'].dropna().hist(bins=16, range=(0,80),alpha = 0.5)
-P.show()
+# df['Age'].hist()
+# P.show()
+#
+# df['Age'].dropna().hist(bins=16, range=(0,80),alpha = 0.5)
+# P.show()
 
 # Cleaning the data
 # Creating a column into df dataframe
-df['Gender'] = 4
+# df['Gender'] = 4
+
+# Lets use different techniques to deal with missing data
+# we create a function called one_hot_dataframe
+def one_hot_dataframe(data, cols, replace=False):
+    vec = feature_extraction.DictVectorizer()
+    mkdict = lambda row: dict((col, row(col)) for col in cols)
+    vecData = pd.DataFrame(vec.fit_transform( \
+        data[cols].apply(mkdict, axis=1)).toarray())
+    vecData.index = data.index
+    if replace:
+        data = data.drop(cols, axis=1)
+        data = data.join(vecData)
+    return (data, vecData)
+
+titanic, titanic-n = one_hot_dataframe(df, ['Pclass'])
 
 # Here we take the first letter of the element and convert to Uppercase
 df['Gender'] = df['Sex'].map(lambda x: x[0].upper())
@@ -209,23 +237,36 @@ x_train_data = df.ix[:, df.columns != 'Survived'].values
 y_train_data = df['Survived'].values
 x_test_data = df_test.values
 
-# Lets do some predictions using Random Forest
-# Import the random forest package
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.cross_validation import train_test_split
-from sklearn import tree
-
 x_Train, x_test, y_train, y_test = train_test_split(x_train_data, y_train_data, test_size = 0.25, random_state = 33)
 
-clf = tree.DecisionTreeClassifier(criterion='entropy', max_depth = 100, min_samples_leaf = 5)
+# Lets create the pipeline
+pipeline = Pipeline([
+            ('clf', DecisionTreeClassifier(criterion='entropy'))
+            ])
 
+# Next we specify the hyperparameter psace for the grid seach
+parameters = {'clf__max_depth': (100, 125, 150),
+              'clf__min_samples_leaf': (5,6,7)}
+
+# We the set the GridSeacrhCV() to amximize the models F1 score:
+grid_search = GridSearchCV(pipeline, parameters, n_jobs=-1,
+                           verbose=1, scoring='f1')
+grid_search.fit(x_Train, y_train)
+print ('Best score: %0.3f' % grid_search.best_score_)
+print ('Best parameters set:')
+best_parameters = grid_search.best_estimator_.get_params()
+for param_name in sorted(parameters.keys()):
+    print ('\t%s: %r' % (param_name, best_parameters[param_name]))
+
+
+clf = tree.DecisionTreeClassifier(criterion='entropy', max_depth = 100, min_samples_leaf = 5)
 clf = clf.fit(x_Train, y_train)
+y_pred = clf.predict(x_test)
 
 clf_RF = RandomForestClassifier(n_estimators = 10, random_state = 33)
 clf_RF = clf_RF.fit(x_Train, y_train)
 y_pred_RF = clf_RF.predict(x_test)
 
-from sklearn import metrics
 def  measure_perfomance(x,y,clf,show_accuracy=True,show_classification_report=True\
                     ,show_confusion_matrix=True):
     y_pred = clf.predict(x)
@@ -249,7 +290,7 @@ measure_perfomance(x_test,y_test, clf_RF,show_classification_report=True, \
 y_pred_RF_output = clf_RF.predict(x_test_data).astype(int)
 
 # Sending data to CSV file using Kaggle code
-KagglePredictionFile = open("kagglePredictionTitanic.csv", "w")
+KagglePredictionFile = open("kagglePredictionTitanicTree.csv", "w")
 open_file_object = csv.writer(KagglePredictionFile)
 open_file_object.writerow(["PassengerId","Survived"])
 open_file_object.writerows(zip(ids, y_pred_RF_output))
