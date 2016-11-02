@@ -5,12 +5,12 @@ Created on Wed Oct 26 18:34:03 2016
 @author: jvivas
 """
 
-import csv as csv 
+import csv as csv
 import numpy as np
 
 Windows_Path = 'C:/Users/jvivas/Dropbox/Private/Personal/Github/Kaggle---Titanic-Python-Pandas'
 Mac_Path = '/Users/jvivas/Documents/GitHub/Kaggle - Titanic Python Pandas'
-Path = Mac_Path
+Path = Windows_Path
 csv_file_object = csv.reader(open(Path+'/' + 'train.csv'))
 header = csv_file_object.__next__()
 data=[]
@@ -249,7 +249,7 @@ measure_perfomance(x_test,y_test, clf_RF,show_classification_report=True, \
 y_pred_RF_output = clf_RF.predict(x_test_data).astype(int)
 
 # Sending data to CSV file using Kaggle code
-KagglePredictionFile = open("kagglePredictionTitanic.csv", "wb")
+KagglePredictionFile = open("kagglePredictionTitanic.csv", "w")
 open_file_object = csv.writer(KagglePredictionFile)
 open_file_object.writerow(["PassengerId","Survived"])
 open_file_object.writerows(zip(ids, y_pred_RF_output))
