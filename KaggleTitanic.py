@@ -22,19 +22,20 @@ import pandas as pd
 Windows_Path = 'C:/Users/jvivas/Dropbox/Private/Personal/Github/Kaggle---Titanic-Python-Pandas'
 Mac_Path = '/Users/jvivas/Documents/GitHub/Kaggle - Titanic Python Pandas'
 Path = Mac_Path
-csv_file_object = csv.reader(open(Path+'/' + 'train.csv'))
-header = csv_file_object.__next__()
-data=[]
 
-for row in csv_file_object:
-    data.append(row)
-data = np.array(data)    
+# csv_file_object = csv.reader(open(Path+'/' + 'train.csv'))
+# header = csv_file_object.__next__()
+# data=[]
+#
+# for row in csv_file_object:
+#     data.append(row)
+# data = np.array(data)
 
-#Look at the first 15 rows of the Age column:   
-data[0::,5]
+# Look at the first 15 rows of the Age column:
+# data[0::,5]
 
-#let's see the dataytype
-type(data[0::5,5])
+# let's see the dataytype
+# type(data[0::5,5])
 
 # So, any slice we take from the data is still a Numpy array. Now let's see if
 # we can take the mean of the passenger ages. They will need to be floats
@@ -56,18 +57,18 @@ df_original_train = pd.read_csv(Path + '/' + 'train.csv', header=0)
 df_original_test = pd.read_csv(Path + '/' + 'test.csv', header=0)
 df_test = pd.read_csv(Path + '/' + 'test.csv', header=0)
 df = pd.read_csv(Path + '/' + 'train.csv', header=0)
-df.head(3)
-df.tail(3)
+# df.head(3)
+# df.tail(3)
 
 # Showing dataframe type
-type(df)
+# type(df)
 # showing elements type
-df.dtypes
+# df.dtypes
 # Showing additional information for each elemtn (count and type and if tis
 # null)
-df.info()
+# df.info()
 # Showing statistical information such (mean, max, count, min)
-df.describe()
+# df.describe()
 
 # Data Munging
 # One step in any data analysis is the data cleaning. Thankfully pandas makes
@@ -78,26 +79,26 @@ df.describe()
 # Referencing and filtering
 # Let's acquire the first 10 rows of the Age column. In pandas this is
 
-df['Age'][0:10]
-df.Age[0:10]
+# df['Age'][0:10]
+# df.Age[0:10]
 
 # let's do some calculations
-df['Age'].mean()
-df['Age'].median()
+# df['Age'].mean()
+# df['Age'].median()
 
 # How to show specific columns from the df
-df[['Sex','Pclass','Age']]
+# df[['Sex','Pclass','Age']]
 
 # How to filter data 
 # Show all rows where age is greater than 60
-df[df['Age'] > 60]
+# df[df['Age'] > 60]
 
 # Show specific columns that matches the WHERE clause
-df[df['Age'] > 60][['Pclass','Age','Survived']]
+# df[df['Age'] > 60][['Pclass','Age','Survived']]
 
 # Lets take a look to the null value in Ages
 
-df[df['Age'].isnull()][['Sex', 'Pclass', 'Age']]
+# df[df['Age'].isnull()][['Sex', 'Pclass', 'Age']]
 
 # here we will go over the dataframe to get the count of male per class
 for i in range(1,4):
@@ -105,16 +106,30 @@ for i in range(1,4):
     print (a)
     
 # let's draw some picture
-import pylab as P
-df['Age'].hist()
-P.show()
-
-df['Age'].dropna().hist(bins=16, range=(0,80),alpha = 0.5)
-P.show()
+# df['Age'].hist()
+# P.show()
+#
+# df['Age'].dropna().hist(bins=16, range=(0,80),alpha = 0.5)
+# P.show()
 
 # Cleaning the data
 # Creating a column into df dataframe
-df['Gender'] = 4
+# df['Gender'] = 4
+
+# Lets use different techniques to deal with missing data
+# we create a function called one_hot_dataframe
+def one_hot_dataframe(data, cols, replace=False):
+    vec = feature_extraction.DictVectorizer()
+    mkdict = lambda row: dict((col, row(col)) for col in cols)
+    vecData = pd.DataFrame(vec.fit_transform( \
+        data[cols].apply(mkdict, axis=1)).toarray())
+    vecData.index = data.index
+    if replace:
+        data = data.drop(cols, axis=1)
+        data = data.join(vecData)
+    return (data, vecData)
+
+titanic, titanic-n = one_hot_dataframe(df, ['Pclass'])
 
 # Here we take the first letter of the element and convert to Uppercase
 df['Gender'] = df['Sex'].map(lambda x: x[0].upper())
