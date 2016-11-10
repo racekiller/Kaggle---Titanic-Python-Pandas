@@ -5,7 +5,7 @@ Created on Wed Oct 26 18:34:03 2016
 @author: jvivas
 """
 
-import csv as csv 
+import csv as csv
 import numpy as np
 # Lets do some predictions using Random Forest
 # Import the random forest package
@@ -18,6 +18,7 @@ from sklearn.grid_search import GridSearchCV
 from sklearn import tree
 from sklearn import metrics
 import pandas as pd
+from sklearn import feature_extraction
 
 Windows_Path = 'C:/Users/jvivas/Dropbox/Private/Personal/Github/Kaggle---Titanic-Python-Pandas'
 Mac_Path = '/Users/jvivas/Documents/GitHub/Kaggle - Titanic Python Pandas'
@@ -44,11 +45,11 @@ Path = Mac_Path
 # ages_onboard = data[0::,5].astype(np.float)
 
 # we will get an error
-# ValueError: could not convert string to float: 
+# ValueError: could not convert string to float:
 # because there are non numeric values in the column 5
 # using numpy array can not do numerical calculations if there are no
 # numerical types in the set
-# therefore we need to lcean the data 
+# therefore we need to lcean the data
 # or we cna use pandas which offers more tools to do this kind of tasks
 # (data clenasing)
 
@@ -89,7 +90,7 @@ df = pd.read_csv(Path + '/' + 'train.csv', header=0)
 # How to show specific columns from the df
 # df[['Sex','Pclass','Age']]
 
-# How to filter data 
+# How to filter data
 # Show all rows where age is greater than 60
 # df[df['Age'] > 60]
 
@@ -104,7 +105,7 @@ df = pd.read_csv(Path + '/' + 'train.csv', header=0)
 for i in range(1,4):
     a = len(df[ (df['Sex'] == 'male') & (df['Pclass'] == i) ])
     print (a)
-    
+
 # let's draw some picture
 # df['Age'].hist()
 # P.show()
@@ -129,7 +130,8 @@ def one_hot_dataframe(data, cols, replace=False):
         data = data.join(vecData)
     return (data, vecData)
 
-titanic, titanic-n = one_hot_dataframe(df, ['Pclass'])
+# titanic, titanic_n = one_hot_dataframe(df, ['Sex', 'Cabin', 'Embarked'], \
+#                                       replace=True)
 
 # Here we take the first letter of the element and convert to Uppercase
 df['Gender'] = df['Sex'].map(lambda x: x[0].upper())
@@ -202,9 +204,9 @@ df_test['FamilySize'] = df_test['SibSp'] + df_test['Parch']
 # Here we can show the columns that matches specific criteria as well
 df.dtypes[df.dtypes.map(lambda x: x=='object')]
 df_test.dtypes[df_test.dtypes.map(lambda x: x=='object')]
-# We can delete these columns 
-df = df.drop(['Name', 'Sex', 'Ticket', 'Cabin', 'Embarked'], axis=1) 
-df_test = df_test.drop(['Name', 'Sex', 'Ticket', 'Cabin', 'Embarked'], axis=1) 
+# We can delete these columns
+df = df.drop(['Name', 'Sex', 'Ticket', 'Cabin', 'Embarked'], axis=1)
+df_test = df_test.drop(['Name', 'Sex', 'Ticket', 'Cabin', 'Embarked'], axis=1)
 # We can delete the Age column as well since we have created the better AgeFill
 df = df.drop(['Age'],axis = 1)
 df_test = df_test.drop(['Age'],axis = 1)
@@ -213,7 +215,7 @@ df_test = df_test.drop(['Age'],axis = 1)
 df = df[pd.notnull(df['Embarked_F'])]
 
 #delete null from Fare  column (we kept df_test with one null value for a fare record)
-# We need to get the average frpice per class and assign it to the null record  
+# We need to get the average frpice per class and assign it to the null record
 df_test2 = df_test[pd.notnull(df_test['Fare'])]
 
 if len(df_test.Fare[df_test.Fare.isnull()]) > 0:
@@ -234,7 +236,12 @@ x_train_data = df.ix[:, df.columns != 'Survived'].values
 y_train_data = df['Survived'].values
 x_test_data = df_test.values
 
-x_Train, x_test, y_train, y_test = train_test_split(x_train_data, y_train_data, test_size = 0.25, random_state = 33)
+x_Train, x_test, y_train, y_test = train_test_split(x_train_data,\
+                                                    y_train_data,\
+                                                    test_size = 0.25, \
+                                                    random_state = 33)
+
+# Lets do feature selection following the book packt ...
 
 # Lets create the pipeline
 pipeline = Pipeline([
@@ -249,23 +256,40 @@ parameters = {'clf__max_depth': (100, 125, 150),
 grid_search = GridSearchCV(pipeline, parameters, n_jobs=-1,
                            verbose=1, scoring='f1')
 grid_search.fit(x_Train, y_train)
+
 print ('Best score: %0.3f' % grid_search.best_score_)
 print ('Best parameters set:')
+
 best_parameters = grid_search.best_estimator_.get_params()
 for param_name in sorted(parameters.keys()):
     print ('\t%s: %r' % (param_name, best_parameters[param_name]))
 
 
-clf = tree.DecisionTreeClassifier(criterion='entropy', max_depth = 100, min_samples_leaf = 5)
+clf = tree.DecisionTreeClassifier(criterion='entropy')
 clf = clf.fit(x_Train, y_train)
 y_pred = clf.predict(x_test)
+print ("Accuracy: {0:.3f}".format(metrics.accuracy_score(y_test, y_pred)), "/n")
 
 clf_RF = RandomForestClassifier(n_estimators = 10, random_state = 33)
 clf_RF = clf_RF.fit(x_Train, y_train)
 y_pred_RF = clf_RF.predict(x_test)
+print ("Accuracy: {0:.3f}".format(metrics.accuracy_score(y_test, y_pred_RF)), "/n")
 
-def  measure_perfomance(x,y,clf,show_accuracy=True,show_classification_report=True\
-                    ,show_confusion_matrix=True):
+# Applying Feature selection
+from sklearn import feature_selection
+fs = feature_selection.SelectPercentile(feature_selection.chi2,\
+                                           percentile=20)
+X_train_fs = fs.fit_transform(x_Train, y_train)
+clf_fs = tree.DecisionTreeClassifier(criterion='entropy')
+clf_fs = clf_fs.fit(X_train_fs, y_train)
+X_test_fs = fs.transform(x_test)
+y_pred_fs = clf_fs.predict(X_test_fs)
+
+print ("Accuracy: {0:.3f}".format(metrics.accuracy_score(y_test, y_pred_fs)), "/n")
+
+def measure_perfomance(x,y,clf,show_accuracy=True\
+                       ,show_classification_report=True\
+                       ,show_confusion_matrix=True):
     y_pred = clf.predict(x)
     if show_accuracy:
         print ("Accuracy:{0:3f}".format(metrics.accuracy_score(y,y_pred)),"/n")

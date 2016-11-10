@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="0f507f78-d22f-4701-9bcf-88e9cb046c03" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/KaggleTitanic.py" afterPath="$PROJECT_DIR$/KaggleTitanic.py" />
     </list>
     <ignored path="Kaggle - Titanic Python Pandas.iws" />
@@ -26,8 +25,8 @@
       <file leaf-file-name="KaggleTitanic.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/KaggleTitanic.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="402">
-              <caret line="109" column="10" selection-start-line="109" selection-start-column="10" selection-end-line="109" selection-end-column="10" />
+            <state relative-caret-position="427">
+              <caret line="110" column="10" selection-start-line="110" selection-start-column="10" selection-end-line="110" selection-end-column="10" />
               <folding>
                 <element signature="e#86#103#0" expanded="true" />
               </folding>
@@ -328,8 +327,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/KaggleTitanic.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="402">
-          <caret line="109" column="10" selection-start-line="109" selection-start-column="10" selection-end-line="109" selection-end-column="10" />
+        <state relative-caret-position="427">
+          <caret line="110" column="10" selection-start-line="110" selection-start-column="10" selection-end-line="110" selection-end-column="10" />
           <folding>
             <element signature="e#86#103#0" expanded="true" />
           </folding>
