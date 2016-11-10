@@ -21,10 +21,23 @@ import pandas as pd
 
 Windows_Path = 'C:/Users/jvivas/Dropbox/Private/Personal/Github/Kaggle---Titanic-Python-Pandas'
 Mac_Path = '/Users/jvivas/Documents/GitHub/Kaggle - Titanic Python Pandas'
-Path = Mac_Path
+Path = Windows_Path
 csv_file_object = csv.reader(open(Path+'/' + 'train.csv'))
 header = csv_file_object.__next__()
-data=[]
+data = []
+
+# Lets use different techniques to deal with missing data
+# we create a function called one_hot_dataframe
+def one_hot_dataframe(data, cols, replace=False):
+    vec = feature_extraction.DictVectorizer()
+    mkdict = lambda row: dict((col, row(col)) for col in cols)
+    vecData = pd.DataFrame(vec.fit_transform( \
+        data[cols].apply(mkdict, axis=1)).toarray())
+    vecData.index = data.index
+    if replace:
+        data = data.drop(cols, axis=1)
+        data = data.join(vecData)
+    return (data, vecData)
 
 # csv_file_object = csv.reader(open(Path+'/' + 'train.csv'))
 # header = csv_file_object.__next__()
@@ -119,20 +132,11 @@ for i in range(1,4):
 # Creating a column into df dataframe
 # df['Gender'] = 4
 
-# Lets use different techniques to deal with missing data
-# we create a function called one_hot_dataframe
-def one_hot_dataframe(data, cols, replace=False):
-    vec = feature_extraction.DictVectorizer()
-    mkdict = lambda row: dict((col, row(col)) for col in cols)
-    vecData = pd.DataFrame(vec.fit_transform( \
-        data[cols].apply(mkdict, axis=1)).toarray())
-    vecData.index = data.index
-    if replace:
-        data = data.drop(cols, axis=1)
-        data = data.join(vecData)
-    return (data, vecData)
-
-titanic, titanic-n = one_hot_dataframe(df, ['Pclass'])
+# applying one hot dataframe
+# one hot dataframe will create a feature per categorical value
+# the definition is not working for python 3 I need to update the code to 
+# make it work for py3
+# titanic, titanic-n = one_hot_dataframe(df, ['Pclass'])
 
 # Here we take the first letter of the element and convert to Uppercase
 df['Gender'] = df['Sex'].map(lambda x: x[0].upper())
@@ -221,11 +225,13 @@ df_test2 = df_test[pd.notnull(df_test['Fare'])]
 
 if len(df_test.Fare[df_test.Fare.isnull()]) > 0:
     fare_Average = np.zeros(3)
-    for i in range(0,3):
-        fare_Average[i] = df_test[df_test.Pclass == i+1]['Fare'].dropna().median()
-    for i in range(0,3):
-        df_test.loc[(df_test.Fare.isnull()) & (df_test.Pclass == i+1),\
-        ['Fare']] = fare_Average[i]
+    for i in range(0, 3):
+        fare_Average[i] =\
+                    df_test[df_test.Pclass == i+1]['Fare'].dropna().median()
+    for i in range(0, 3):
+        df_test.loc[(df_test.Fare.isnull()) &
+                    (df_test.Pclass == i+1),
+                    ['Fare']] = fare_Average[i]
 
 # Collect the test data's PassengerIds before dropping it
 ids = df_test['PassengerId'].values
